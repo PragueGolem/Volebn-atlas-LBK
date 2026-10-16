@@ -1,0 +1,33 @@
+{
+  "region": "Liberecký kraj",
+  "district_codes": [
+    "5101",
+    "5102",
+    "5103",
+    "5104"
+  ],
+  "elections": [
+    {
+      "id": "kz2024",
+      "label": "Krajské volby 2024",
+      "type": "krajské",
+      "year": 2024
+    },
+    {
+      "id": "ps2025",
+      "label": "Poslanecká sněmovna 2025",
+      "type": "sněmovní",
+      "year": 2025
+    },
+    {
+      "id": "kv2026",
+      "label": "Komunální volby 2026",
+      "type": "komunální",
+      "year": 2026
+    }
+  ],
+  "notes": {
+    "municipal": "For the map, the app defaults to the main municipal council; all contests remain in results_normalized.csv.",
+    "families": "Political-family groupings come from config/harmonization.csv and never split a joint list into component parties."
+  }
+}
