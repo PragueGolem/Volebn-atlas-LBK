@@ -142,3 +142,4 @@ Projekt je záměrně deskriptivní: pracuje pouze s agregovanými veřejnými v
 ## Liberec a Vratislavice (v7)
 
 U komunálních voleb je statutární město Liberec v územních datech rozděleno na dvě jednotky: **Liberec (nečleněné město)** a **Liberec‑Vratislavice nad Nisou**. Verze v7 opravuje spojení registru ČSÚ tak, aby se tyto dvě jednotky nezobrazovaly omylem obě pod názvem Vratislavice. Hlavní volba do Zastupitelstva statutárního města Liberec se přitom týká obou jednotek; Vratislavice mají navíc vlastní volbu do zastupitelstva městského obvodu, která zůstává v plném normalizovaném CSV.
+Vercel deployment
