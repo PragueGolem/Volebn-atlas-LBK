@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Volební atlas Libereckého kraje</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <h1>Volební atlas Libereckého kraje</h1>
+      <p>Krajské 2024 · Poslanecká sněmovna 2025 · Komunální 2026 · volební okrsky</p>
+    </div>
+    <div id="status" class="status">Načítám data…</div>
+  </header>
+
+  <main class="layout">
+    <aside class="controls" aria-label="Ovládání mapy">
+      <label>
+        Volby
+        <select id="election"></select>
+      </label>
+
+      <label>
+        Režim kandidátek
+        <select id="groupMode">
+          <option value="official">Oficiální kandidátky</option>
+          <option value="family">Politické rodiny</option>
+          <option value="custom">Vlastní součet kandidátek</option>
+        </select>
+      </label>
+
+      <label id="singleGroupWrap">
+        Kandidátka / skupina
+        <select id="group"></select>
+      </label>
+
+      <label id="customGroupWrap" class="hidden">
+        Kandidátky k sečtení
+        <select id="customGroups" multiple size="8"></select>
+        <span class="hint">Ctrl/Cmd + klik pro více položek.</span>
+      </label>
+
+      <label>
+        Ukazatel
+        <select id="metric">
+          <option value="share">Podíl hlasů (%)</option>
+          <option value="votes">Počet hlasů</option>
+          <option value="turnout">Volební účast (%)</option>
+          <option value="strength">Relativní síla (kraj = 100)</option>
+        </select>
+      </label>
+
+      <label>
+        Obec
+        <select id="municipality"></select>
+      </label>
+
+      <button id="resetView" type="button">Zobrazit celý kraj</button>
+
+      <section class="legendBox" aria-label="Legenda">
+        <h2 id="legendTitle">Legenda</h2>
+        <div id="legend"></div>
+        <p id="metricNote" class="hint"></p>
+      </section>
+    </aside>
+
+    <section class="mapPanel">
+      <div id="map" aria-label="Mapa volebních okrsků"></div>
+    </section>
+
+    <aside class="detail" aria-live="polite">
+      <div id="detailEmpty">
+        <h2>Detail okrsku</h2>
+        <p>Klikni na volební okrsek v mapě.</p>
+      </div>
+      <div id="detailContent" class="hidden">
+        <h2 id="detailTitle"></h2>
+        <div id="detailStats" class="stats"></div>
+        <h3>Výsledky všech kandidátek</h3>
+        <div class="tableWrap">
+          <table>
+            <thead><tr><th>Kandidátka</th><th>Hlasy</th><th>%</th></tr></thead>
+            <tbody id="detailRows"></tbody>
+          </table>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <footer>
+    Zdroj dat: Český statistický úřad / volby.gov.cz. Aplikace pracuje pouze s agregovanými veřejnými volebními výsledky.
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="app.js"></script>
+</body>
+</html>
