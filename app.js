@@ -423,7 +423,7 @@
 
   async function loadGeometry(eid) {
     if (geoCache.has(eid)) return geoCache.get(eid);
-    const resp = await fetch(`data/precincts_${eid}.geojson`);
+    const resp = await fetch(`precincts_${eid}.geojson`);
     if (!resp.ok) throw new Error(`Chybí data/precincts_${eid}.geojson`);
     const geo = await resp.json();
     geoCache.set(eid, geo);
@@ -546,8 +546,8 @@
       map.setView([50.72, 15.15], 9);
 
       const [metaResp, resultsResp] = await Promise.all([
-        fetch('data/metadata.json'),
-        fetch('data/results.json')
+        fetch('metadata.json'),
+        fetch('results.json')
       ]);
       if (!metaResp.ok || !resultsResp.ok) {
         throw new Error('Datové soubory ještě nejsou vytvořené. Spusť nejdřív: python build_data.py');
