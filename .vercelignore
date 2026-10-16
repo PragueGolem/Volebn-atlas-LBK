@@ -1,0 +1,8 @@
+raw/
+__pycache__/
+*.pyc
+1_VYTVORIT_DATA.bat
+2_SPUSTIT_ATLAS.bat
+requirements.txt
+build_data.py
+README.md
