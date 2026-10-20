@@ -14,34 +14,7 @@
       "label": "Komunální volby 2026",
       "type": "komunální",
       "year": 2026,
-      "geo": "precincts_kv2026_liberec.geojson"
+      "geo": "precincts_kv2026.geojson"
     }
-  ],
-  "comparison": {
-    "ano": {
-      "label": "ANO 2011",
-      "from": ["ANO 2011"],
-      "to": "ANO 2011"
-    },
-    "spd": {
-      "label": "SPD",
-      "from": ["Svoboda a přímá demokracie (SPD)"],
-      "to": "Svoboda a přímá demokracie (SPD)"
-    },
-    "ods": {
-      "label": "ODS + sportovci",
-      "from": ["ODS společně se Sportovci"],
-      "to": "ODS společně se sportovci"
-    },
-    "lol_pirati": {
-      "label": "LOL + Piráti 2022 → společná kandidátka 2026",
-      "from": ["Liberec otevřený lidem", "Česká pirátská strana"],
-      "to": "Liberec otevřený lidem a Piráti"
-    },
-    "slk": {
-      "label": "SLK blok",
-      "from": ["Starostové pro Liberecký kraj společně s TOP 09 a KDU-ČSL"],
-      "to": "Starostové pro Liberecký kraj"
-    }
-  }
+  ]
 }
