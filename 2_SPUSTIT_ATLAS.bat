@@ -3,9 +3,19 @@ setlocal
 chcp 65001 >nul
 cd /d "%~dp0"
 
-if not exist "%~dp0public\data\results.json" (
+if not exist "%~dp0results.json" (
   echo Data jeste nejsou vytvorena.
-  echo Nejdriv spust 1_VYTVORIT_DATA.bat z ROZBALENE slozky atlasu.
+  echo Nejdriv spust 1_VYTVORIT_DATA.bat.
+  pause
+  exit /b 1
+)
+if not exist "%~dp0precincts_kv2022.geojson" (
+  echo Chybi geometrie okrsku 2022. Nejdriv spust 1_VYTVORIT_DATA.bat.
+  pause
+  exit /b 1
+)
+if not exist "%~dp0precincts_kv2026_liberec.geojson" (
+  echo Chybi geometrie okrsku 2026. Nejdriv spust 1_VYTVORIT_DATA.bat.
   pause
   exit /b 1
 )
@@ -22,7 +32,7 @@ if not defined PYTHON_CMD goto nopython
 start "" "http://localhost:8000"
 echo Atlas bezi na http://localhost:8000
 echo Toto okno nech otevrene. Ukoncis ho Ctrl+C.
-%PYTHON_CMD% -m http.server 8000 -d "%~dp0public"
+%PYTHON_CMD% -m http.server 8000 -d "%~dp0"
 exit /b 0
 
 :nopython
