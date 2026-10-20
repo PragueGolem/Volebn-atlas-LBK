@@ -125,10 +125,19 @@ def load_registry(year: int):
 def process_year(year: int):
     parties = load_registry(year)
     t3 = load_rows(URLS[year]["t3"], zipped=True)
+
+    # T/3 contains KODZASTUP, so use it to identify the exact municipal contest.
+    # HL does NOT contain KODZASTUP; it is keyed by OBEC + TYPZASTUP + OKRSEK.
+    contest_rows = [r for r in t3 if intval(get(r, "KODZASTUP")) == CITY]
+    if not contest_rows:
+        raise RuntimeError(f"Liberec {year}: T/3 neobsahuje KODZASTUP={CITY}")
+
+    target_obec = intval(get(contest_rows[0], "OBEC"))
+    target_typ = intval(get(contest_rows[0], "TYPZASTUP"))
+    print(year, f"soutěž OBEC={target_obec}, TYPZASTUP={target_typ}", flush=True)
+
     precincts = {}
-    for r in t3:
-        if intval(get(r, "KODZASTUP")) != CITY:
-            continue
+    for r in contest_rows:
         o = intval(get(r, "OKRSEK"))
         if not o:
             continue
@@ -146,7 +155,11 @@ def process_year(year: int):
     hl = load_rows(URLS[year]["hl"], zipped=True)
     hcount = 0
     for r in hl:
-        if intval(get(r, "KODZASTUP")) != CITY:
+        # Official HL structure has no KODZASTUP. Match the municipal contest
+        # through the OBEC + TYPZASTUP pair obtained from T/3 above.
+        if intval(get(r, "OBEC")) != target_obec:
+            continue
+        if intval(get(r, "TYPZASTUP")) != target_typ:
             continue
         o = intval(get(r, "OKRSEK"))
         p = intval(get(r, "POR_STR_HL", "POR_STR"))
