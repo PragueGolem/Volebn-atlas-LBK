@@ -3,6 +3,15 @@ setlocal
 chcp 65001 >nul
 cd /d "%~dp0"
 
+if not exist "%~dp0index.html" (
+  echo CHYBI index.html ve slozce:
+  echo %~dp0
+  echo.
+  echo Spust tento BAT z korenove slozky rozbaleneho atlasu.
+  pause
+  exit /b 1
+)
+
 if not exist "%~dp0results.json" (
   echo Data jeste nejsou vytvorena.
   echo Nejdriv spust 1_VYTVORIT_DATA.bat.
@@ -29,10 +38,13 @@ if not errorlevel 1 set "PYTHON_CMD=python"
 if not defined PYTHON_CMD goto nopython
 
 :pythonok
-start "" "http://localhost:8000"
-echo Atlas bezi na http://localhost:8000
-echo Toto okno nech otevrene. Ukoncis ho Ctrl+C.
-%PYTHON_CMD% -m http.server 8000 -d "%~dp0"
+echo Pracovni slozka: %~dp0
+echo.
+echo Atlas bude na:
+echo http://localhost:8000/index.html
+echo.
+start "" "http://localhost:8000/index.html"
+%PYTHON_CMD% -m http.server 8000 --directory "%~dp0"
 exit /b 0
 
 :nopython
