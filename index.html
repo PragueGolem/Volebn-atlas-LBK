@@ -3,15 +3,15 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Volební atlas Libereckého kraje</title>
+  <title>Volební atlas Liberce 2022–2026</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header class="topbar">
     <div>
-      <h1>Volební atlas Libereckého kraje</h1>
-      <p>Krajské 2024 · Poslanecká sněmovna 2025 · Komunální 2026 · volební okrsky</p>
+      <h1>Volební atlas Liberce 2022–2026</h1>
+      <p>Komunální volby 2022 · komunální volby 2026 · volební okrsky · kandidátské hlasy</p>
     </div>
     <div id="status" class="status">Načítám data…</div>
   </header>
@@ -24,41 +24,44 @@
       </label>
 
       <label>
-        Režim kandidátek
-        <select id="groupMode">
-          <option value="official">Oficiální kandidátky</option>
-          <option value="family">Politické rodiny</option>
-          <option value="custom">Vlastní součet kandidátek</option>
+        Režim
+        <select id="mode">
+          <option value="party">Kandidátka</option>
+          <option value="candidate">Kandidát</option>
+          <option value="compare">Komparace 2022–2026</option>
+          <option value="turnout">Volební účast</option>
         </select>
       </label>
 
-      <label id="singleGroupWrap">
-        Kandidátka / skupina
-        <select id="group"></select>
+      <label id="partyWrap">
+        Kandidátka
+        <select id="party"></select>
       </label>
 
-      <label id="customGroupWrap" class="hidden">
-        Kandidátky k sečtení
-        <select id="customGroups" multiple size="8"></select>
-        <span class="hint">Ctrl/Cmd + klik pro více položek.</span>
+      <label id="candidateWrap" class="hidden">
+        Kandidát
+        <select id="candidate"></select>
       </label>
 
-      <label>
+      <label id="comparisonWrap" class="hidden">
+        Srovnání
+        <select id="comparison"></select>
+      </label>
+
+      <label id="metricWrap">
         Ukazatel
         <select id="metric">
           <option value="share">Podíl hlasů (%)</option>
           <option value="votes">Počet hlasů</option>
-          <option value="turnout">Volební účast (%)</option>
-          <option value="strength">Relativní síla (kraj = 100)</option>
         </select>
       </label>
 
       <label>
-        Obec
-        <select id="municipality"></select>
+        Okrsek
+        <select id="precinct"></select>
       </label>
 
-      <button id="resetView" type="button">Zobrazit celý kraj</button>
+      <button id="resetView" type="button">Zobrazit celý Liberec</button>
 
       <section class="legendBox" aria-label="Legenda">
         <h2 id="legendTitle">Legenda</h2>
@@ -68,7 +71,7 @@
     </aside>
 
     <section class="mapPanel">
-      <div id="map" aria-label="Mapa volebních okrsků"></div>
+      <div id="map" aria-label="Mapa volebních okrsků Liberce"></div>
     </section>
 
     <aside class="detail" aria-live="polite">
@@ -79,10 +82,10 @@
       <div id="detailContent" class="hidden">
         <h2 id="detailTitle"></h2>
         <div id="detailStats" class="stats"></div>
-        <h3>Výsledky všech kandidátek</h3>
+        <h3 id="detailTableTitle">Výsledky všech kandidátek</h3>
         <div class="tableWrap">
           <table>
-            <thead><tr><th>Kandidátka</th><th>Hlasy</th><th>%</th></tr></thead>
+            <thead><tr><th id="detailNameHead">Kandidátka</th><th>Hlasy</th><th id="detailPctHead">%</th></tr></thead>
             <tbody id="detailRows"></tbody>
           </table>
         </div>
@@ -91,7 +94,7 @@
   </main>
 
   <footer>
-    Zdroj dat: Český statistický úřad / volby.gov.cz. Aplikace pracuje pouze s agregovanými veřejnými volebními výsledky.
+    Zdroj dat: Český statistický úřad / volby.gov.cz. Mapa ulic: Esri World Street Map. Aplikace pracuje pouze s agregovanými veřejnými volebními výsledky.
   </footer>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
