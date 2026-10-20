@@ -1,33 +1,47 @@
 {
-  "region": "Liberecký kraj",
-  "district_codes": [
-    "5101",
-    "5102",
-    "5103",
-    "5104"
-  ],
+  "region": "Liberec",
+  "municipality_code": "563889",
   "elections": [
     {
-      "id": "kz2024",
-      "label": "Krajské volby 2024",
-      "type": "krajské",
-      "year": 2024
-    },
-    {
-      "id": "ps2025",
-      "label": "Poslanecká sněmovna 2025",
-      "type": "sněmovní",
-      "year": 2025
+      "id": "kv2022",
+      "label": "Komunální volby 2022",
+      "type": "komunální",
+      "year": 2022,
+      "geo": "precincts_kv2022.geojson"
     },
     {
       "id": "kv2026",
       "label": "Komunální volby 2026",
       "type": "komunální",
-      "year": 2026
+      "year": 2026,
+      "geo": "precincts_kv2026_liberec.geojson"
     }
   ],
-  "notes": {
-    "municipal": "For the map, the app defaults to the main municipal council; all contests remain in results_normalized.csv.",
-    "families": "Political-family groupings come from config/harmonization.csv and never split a joint list into component parties."
+  "comparison": {
+    "ano": {
+      "label": "ANO 2011",
+      "from": ["ANO 2011"],
+      "to": "ANO 2011"
+    },
+    "spd": {
+      "label": "SPD",
+      "from": ["Svoboda a přímá demokracie (SPD)"],
+      "to": "Svoboda a přímá demokracie (SPD)"
+    },
+    "ods": {
+      "label": "ODS + sportovci",
+      "from": ["ODS společně se Sportovci"],
+      "to": "ODS společně se sportovci"
+    },
+    "lol_pirati": {
+      "label": "LOL + Piráti 2022 → společná kandidátka 2026",
+      "from": ["Liberec otevřený lidem", "Česká pirátská strana"],
+      "to": "Liberec otevřený lidem a Piráti"
+    },
+    "slk": {
+      "label": "SLK blok",
+      "from": ["Starostové pro Liberecký kraj společně s TOP 09 a KDU-ČSL"],
+      "to": "Starostové pro Liberecký kraj"
+    }
   }
 }
