@@ -84,8 +84,8 @@
     const names=partyNames();
     names.forEach(n=>option(els.party,n,n));
     if(els.election.value==='kv2022') option(els.party,AGG_ID,AGG_LABEL);
-    const values=[...els.party.options].map(o=>o.value);
-    if(values.includes(previous)) els.party.value=previous;
+    const opts=[...els.party.options].map(o=>o.value);
+    if(opts.includes(previous)) els.party.value=previous;
     else {
       const pirate=names.find(n=>normalize(n).includes('pirat'));
       els.party.value=pirate || names[0] || '';
@@ -151,10 +151,15 @@
   function normKey(k){ return String(k||'').toUpperCase().replace(/[^A-Z0-9]/g,''); }
   function prop(props,names){
     const keys=Object.keys(props||{});
-    for(const name of names){ const nk=normKey(name); const hit=keys.find(k=>normKey(k)===nk); if(hit) return props[hit]; }
+    for(const name of names){
+      const nk=normKey(name);
+      const hit=keys.find(k=>normKey(k)===nk);
+      if(hit) return props[hit];
+    }
     return null;
   }
 
+  // The original LBK GeoJSON uses municipality_code, precinct and precinct_key.
   function featureMunicipality(f){
     const p=f.properties||{};
     const direct=prop(p,['municipality_code','OBEC','KOD_OBCE','ZUJ','KOD_OBEC']);
@@ -165,23 +170,33 @@
 
   function featurePrecinct(f){
     const p=f.properties||{};
-    const direct=prop(p,['precinct_no','OKRSEK','CISLO_OKRSKU','CISLOOKRSKU','OKRSEK_C']);
+    const direct=prop(p,['precinct','precinct_no','OKRSEK','CISLO_OKRSKU','CISLOOKRSKU','OKRSEK_C']);
     if(direct!==null && direct!==undefined && String(direct).trim()!==''){
-      const n=Number(String(direct).replace(',','.')); if(Number.isFinite(n)) return n;
+      const n=Number(String(direct).replace(',','.'));
+      if(Number.isFinite(n)) return n;
     }
     const key=String(p.precinct_key||p.PRECINCT_KEY||'');
-    const nums=key.match(/\d+/g); if(nums?.length){ const n=Number(nums[nums.length-1]); if(Number.isFinite(n)) return n; }
+    if(key){
+      const tail=key.split(/[:|/_-]/).filter(Boolean).pop();
+      const n=Number(tail);
+      if(Number.isFinite(n)) return n;
+    }
     for(const [k,v] of Object.entries(p)){
-      if(normKey(k).includes('OKR')){ const n=Number(v); if(Number.isFinite(n)) return n; }
+      if(normKey(k).includes('OKR') || normKey(k).includes('PRECINCT')){
+        const n=Number(v); if(Number.isFinite(n)) return n;
+      }
     }
     return null;
   }
 
+  // Boundaries must never disappear just because a results key failed to match.
+  // Any geometry feature belonging to municipality 563889 is drawn; if data do
+  // not match, it remains grey instead of being filtered out.
   function isLiberecFeature(f){
-    const n=featurePrecinct(f);
-    if(n===null || !precinctIndex.has(n)) return false;
     const m=featureMunicipality(f);
-    return !m || m===CITY;
+    if(m===CITY) return true;
+    const key=String(f.properties?.precinct_key||f.properties?.PRECINCT_KEY||'');
+    return key.startsWith(`${CITY}:`) || key.startsWith(`${CITY}|`) || key.includes(CITY);
   }
 
   function renderMap(){
@@ -190,36 +205,44 @@
     const breaks=quantileBreaks(nums,colors.length); updateLegend(breaks);
     if(geoLayer) map.removeLayer(geoLayer);
 
-    let matched=0;
+    let polygons=0;
+    const matchedNos=new Set();
     geoLayer=L.geoJSON(currentGeo,{
-      filter:f=>{ const ok=isLiberecFeature(f); if(ok) matched++; return ok; },
+      filter:f=>{
+        const ok=isLiberecFeature(f);
+        if(ok) polygons++;
+        return ok;
+      },
       style:f=>{
         const n=featurePrecinct(f), v=values.get(n);
-        return {color:'#263746',weight:1.45,opacity:1,fillColor:colorFor(v,breaks),fillOpacity:.52};
+        if(n!==null && precinctIndex.has(n)) matchedNos.add(n);
+        return {color:'#172033',weight:1.5,opacity:1,fillColor:colorFor(v,breaks),fillOpacity:.58};
       },
       onEachFeature:(f,layer)=>{
         const n=featurePrecinct(f), v=values.get(n);
-        layer.bindTooltip(`<b>Okrsek ${n ?? ''}</b><br>${v===null?'bez dat':fmtPct(v)}`);
+        layer.bindTooltip(`<b>Okrsek ${n ?? '?'}</b><br>${v===null || v===undefined?'bez dat':fmtPct(v)}`,{sticky:true});
+        layer.on('mouseover',()=>{ if(layer!==selectedLayer){layer.setStyle({weight:2.6,color:'#000',fillOpacity:.75});if(layer.bringToFront)layer.bringToFront();} });
+        layer.on('mouseout',()=>{ if(layer!==selectedLayer && geoLayer) geoLayer.resetStyle(layer); });
         layer.on('click',()=>{
-          if(selectedLayer) selectedLayer.setStyle({weight:1.45,color:'#263746'});
-          selectedLayer=layer; layer.setStyle({weight:3,color:'#111'}); layer.bringToFront();
-          els.precinct.value=String(n); showDetail(n);
+          if(selectedLayer && geoLayer && selectedLayer!==layer) geoLayer.resetStyle(selectedLayer);
+          selectedLayer=layer; layer.setStyle({weight:3,color:'#000',fillOpacity:.82}); if(layer.bringToFront)layer.bringToFront();
+          if(n!==null){els.precinct.value=String(n);showDetail(n);}
         });
       }
     }).addTo(map);
 
     fullBounds=geoLayer.getBounds();
     if(fullBounds.isValid()) map.fitBounds(fullBounds.pad(.02));
-    els.status.textContent=`${currentRows.length.toLocaleString('cs-CZ')} řádků výsledků · ${precinctIndex.size} okrsků · ${matched} polygonů`;
+    els.status.textContent=`${currentRows.length.toLocaleString('cs-CZ')} řádků výsledků · ${precinctIndex.size} okrsků · ${polygons} polygonů · ${matchedNos.size} napojených`;
   }
 
   function stat(k,v){ return `<div class="stat"><span class="k">${k}</span><span class="v">${v}</span></div>`; }
 
   function showDetail(no){
     const rows=precinctIndex.get(Number(no))||[];
-    if(!rows.length){ els.detailContent.classList.add('hidden'); els.detailEmpty.classList.remove('hidden'); return; }
+    if(!rows.length){els.detailContent.classList.add('hidden');els.detailEmpty.classList.remove('hidden');return;}
     const base=rows[0];
-    els.detailEmpty.classList.add('hidden'); els.detailContent.classList.remove('hidden');
+    els.detailEmpty.classList.add('hidden');els.detailContent.classList.remove('hidden');
     els.detailTitle.textContent=`Okrsek ${no}`;
     const turnout=Number(base.registered_voters||0)>0?Number(base.issued_envelopes||0)/Number(base.registered_voters)*100:0;
     els.detailStats.innerHTML=stat('Voliči v seznamu',fmtInt(base.registered_voters))+stat('Vydané obálky',fmtInt(base.issued_envelopes))+stat('Účast',fmtPct(turnout))+stat('Platné kandidátské hlasy',fmtInt(base.valid_votes));
@@ -227,38 +250,34 @@
     rows.slice().sort((a,b)=>Number(b.votes||0)-Number(a.votes||0)).forEach(r=>{
       const pct=Number(r.valid_votes||0)>0?Number(r.votes||0)/Number(r.valid_votes)*100:0;
       const tr=document.createElement('tr');
-      const selected=els.party.value!==AGG_ID && r.list_name===els.party.value;
-      if(selected) tr.className='selectedRow';
+      if(els.party.value!==AGG_ID && r.list_name===els.party.value) tr.className='selectedRow';
       tr.innerHTML=`<td>${r.list_name}</td><td>${fmtInt(r.votes)}</td><td>${fmtPct(pct)}</td>`;
       els.detailRows.appendChild(tr);
     });
     if(els.party.value===AGG_ID){
       const picked=selectedRows(rows), votes=picked.reduce((s,r)=>s+Number(r.votes||0),0), valid=Number(base.valid_votes||0), pct=valid>0?votes/valid*100:0;
-      const tr=document.createElement('tr'); tr.className='selectedRow';
-      tr.innerHTML=`<td><b>${AGG_LABEL}</b></td><td><b>${fmtInt(votes)}</b></td><td><b>${fmtPct(pct)}</b></td>`;
-      els.detailRows.prepend(tr);
+      const tr=document.createElement('tr');tr.className='selectedRow';tr.innerHTML=`<td><b>${AGG_LABEL}</b></td><td><b>${fmtInt(votes)}</b></td><td><b>${fmtPct(pct)}</b></td>`;els.detailRows.prepend(tr);
     }
   }
 
   async function switchElection(){
     const election=metadata.elections.find(e=>e.id===els.election.value);
-    currentRows=rowsForElection(election.id); buildPrecinctIndex(); updatePartyOptions(); updatePrecinctOptions();
-    currentGeo=await loadGeo(election); renderMap();
-    els.detailContent.classList.add('hidden'); els.detailEmpty.classList.remove('hidden');
+    currentRows=rowsForElection(election.id);buildPrecinctIndex();updatePartyOptions();updatePrecinctOptions();
+    currentGeo=await loadGeo(election);renderMap();
+    els.detailContent.classList.add('hidden');els.detailEmpty.classList.remove('hidden');
   }
 
   async function init(){
     initMap();
     [metadata,results]=await Promise.all([loadJson('metadata.json'),loadJson('results.json')]);
-    els.election.innerHTML=''; metadata.elections.forEach(e=>option(els.election,e.id,e.label));
+    els.election.innerHTML='';metadata.elections.forEach(e=>option(els.election,e.id,e.label));
     els.election.value=metadata.elections.some(e=>e.id==='kv2026')?'kv2026':metadata.elections[0].id;
     await switchElection();
-
     els.election.addEventListener('change',switchElection);
-    els.party.addEventListener('change',()=>{ renderMap(); const n=els.precinct.value; if(n) showDetail(Number(n)); });
-    els.precinct.addEventListener('change',()=>{ const n=Number(els.precinct.value); if(n) showDetail(n); else {els.detailContent.classList.add('hidden');els.detailEmpty.classList.remove('hidden');} });
-    els.resetView.addEventListener('click',()=>{ if(fullBounds?.isValid()) map.fitBounds(fullBounds.pad(.02)); });
+    els.party.addEventListener('change',()=>{renderMap();const n=els.precinct.value;if(n)showDetail(Number(n));});
+    els.precinct.addEventListener('change',()=>{const n=Number(els.precinct.value);if(n)showDetail(n);else{els.detailContent.classList.add('hidden');els.detailEmpty.classList.remove('hidden');}});
+    els.resetView.addEventListener('click',()=>{if(fullBounds?.isValid())map.fitBounds(fullBounds.pad(.02));});
   }
 
-  init().catch(err=>{ console.error(err); els.status.textContent=`Chyba: ${err.message}`; });
+  init().catch(err=>{console.error(err);els.status.textContent=`Chyba: ${err.message}`;});
 })();
